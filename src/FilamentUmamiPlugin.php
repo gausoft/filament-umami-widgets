@@ -3,16 +3,11 @@
 namespace Schmeits\FilamentUmami;
 
 use Closure;
-use Filament\Contracts\Plugin;
-use Filament\Panel;
-use Filament\Support\Concerns\EvaluatesClosures;
-use Filament\Widgets\StatsOverviewWidget;
 use Schmeits\FilamentUmami\Enums\UmamiStatsWidgets;
+use Filament\Contracts\Plugin;
 
 class FilamentUmamiPlugin implements Plugin
 {
-    use EvaluatesClosures;
-
     protected string | Closure | null $pollingInterval = null;
 
     protected array $widgets = [];
@@ -22,14 +17,16 @@ class FilamentUmamiPlugin implements Plugin
         return 'filament-umami-widgets';
     }
 
-    public function register(Panel $panel): void
+    public function register(\Filament\Panel $panel): void
     {
-        //
+        foreach ($this->widgets as $widget) {
+            $panel->widgets([$widget]);
+        }
     }
 
-    public function boot(Panel $panel): void
+    public function boot(\Filament\Panel $panel): void
     {
-        //
+        WidgetManager::make()->boot();
     }
 
     public static function make(): static
@@ -47,7 +44,11 @@ class FilamentUmamiPlugin implements Plugin
 
     public function getPollingInterval(): string
     {
-        return $this->evaluate($this->pollingInterval) ?? '60s';
+        if ($this->pollingInterval instanceof Closure) {
+            return $this->pollingInterval->call($this) ?? '60s';
+        }
+
+        return $this->pollingInterval ?? '60s';
     }
 
     public function pollingInterval(string | Closure | null $interval = '60s'): static

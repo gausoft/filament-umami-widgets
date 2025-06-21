@@ -42,10 +42,10 @@ class FilamentUmamiServiceProvider extends PackageServiceProvider
 
     public function packageBooted(): void
     {
-        WidgetManager::make()->boot();
-
         // Testing
-        Testable::mixin(new TestsFilamentUmami);
+        if (class_exists(Testable::class)) {
+            Testable::mixin(new TestsFilamentUmami);
+        }
     }
 
     protected function getAssetPackageName(): ?string
